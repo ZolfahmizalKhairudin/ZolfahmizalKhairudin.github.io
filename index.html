@@ -168,8 +168,10 @@
   .marquee-row { display: flex; flex: none; gap: 48px; padding-right: 48px; font: 800 clamp(32px, 5vw, 64px)/1 var(--display); letter-spacing: -.03em; white-space: nowrap; animation: slide 38s linear infinite; }
   .marquee-row span:nth-child(even) { color: transparent; -webkit-text-stroke: 1px var(--mute); }
   @keyframes slide { to { transform: translateX(-100%); } }
-  .groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1px; border: 1px solid var(--line); border-radius: 20px; overflow: hidden; background: var(--line); }
+  .groups { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; border: 1px solid var(--line); border-radius: 20px; overflow: hidden; background: var(--line); }
   .group { padding: 26px; background: var(--bg); }
+  @media (max-width: 899px) { .groups { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 599px) { .groups { grid-template-columns: 1fr; } }
   .group h3 { margin: 0 0 12px; font: 700 13px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--aqua); }
   .group p { margin: 0; color: var(--text); }
 

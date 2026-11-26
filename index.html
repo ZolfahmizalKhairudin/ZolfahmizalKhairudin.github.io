@@ -92,9 +92,29 @@
   .sec-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
   h2 { margin: 0; font: 800 clamp(40px, 7vw, 104px)/.92 var(--display); letter-spacing: -.04em; }
 
-  .about-text { max-width: 1040px; margin: 0; font: 700 clamp(26px, 3.6vw, 50px)/1.18 var(--display); letter-spacing: -.02em; }
+  .about-text { max-width: 1040px; margin: 0; font: 700 clamp(24px, 2.9vw, 44px)/1.2 var(--display); letter-spacing: -.02em; }
   .about-text .word { display: inline-block; white-space: pre; }
   .about-text em { font-style: normal; color: var(--aqua); }
+  /* portrait: an AquaAlert reading of me */
+  .about-grid { display: grid; gap: 48px; align-items: start; }
+  @media (min-width: 900px) { .about-grid { grid-template-columns: minmax(300px, 420px) 1fr; gap: 64px; } .portrait { position: sticky; top: 96px; } }
+  .portrait { margin: 0; --wet: 70%; }
+  .pf { position: relative; aspect-ratio: 620 / 920; border-radius: 24px; overflow: hidden; border: 1px solid var(--line); background: #11141a; }
+  .pf img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .p-wet { position: absolute; inset: 0; clip-path: inset(var(--wet) 0 0 0); }
+  .p-wet img { transform: scale(1.045) translateY(1.2%); filter: saturate(.55) brightness(.8) contrast(1.08); animation: refract 5s ease-in-out infinite alternate; }
+  .p-wet::after { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(124,232,216,.30), rgba(20,70,120,.62)); mix-blend-mode: multiply; }
+  .p-wet::before { content: ""; position: absolute; inset: 0; z-index: 1; opacity: .35; background: radial-gradient(ellipse 30% 6% at 30% 60%, rgba(255,255,255,.5), transparent 70%), radial-gradient(ellipse 22% 5% at 70% 75%, rgba(255,255,255,.4), transparent 70%), radial-gradient(ellipse 26% 4% at 45% 88%, rgba(255,255,255,.35), transparent 70%); animation: caustic 6s ease-in-out infinite alternate; }
+  @keyframes refract { to { transform: scale(1.05) translate(-1.2%, 1.6%) skewX(-1deg); } }
+  @keyframes caustic { to { transform: translateX(6%); opacity: .2; } }
+  .p-surface { position: absolute; left: 0; right: 0; top: var(--wet); height: 2px; background: rgba(124,232,216,.9); box-shadow: 0 0 18px rgba(124,232,216,.7); }
+  .p-surface::before { content: ""; position: absolute; left: 0; bottom: 0; width: 200%; height: 14px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='14' viewBox='0 0 120 14'%3E%3Cpath d='M0 14 C20 4 40 4 60 9 S100 14 120 6 V14Z' fill='%237ce8d8' fill-opacity='.35'/%3E%3C/svg%3E") repeat-x; background-size: 120px 14px; animation: wave 4s linear infinite; }
+  .staff { position: absolute; top: 0; bottom: 0; right: 14px; width: 12px; background: repeating-linear-gradient(to top, #e8473f 0 16px, #f4f1ea 16px 32px); border-radius: 3px; box-shadow: 0 0 0 1px rgba(0,0,0,.25); opacity: .92; }
+  .staff span { position: absolute; right: 18px; transform: translateY(50%); padding: 2px 6px; border-radius: 4px; background: rgba(10,11,14,.78); color: var(--text); font: 700 11px/1.2 var(--mono); white-space: nowrap; }
+  .staff span::after { content: ""; position: absolute; right: -6px; top: 50%; width: 6px; height: 1px; background: var(--text); }
+  .portrait figcaption { display: flex; justify-content: space-between; gap: 12px; margin-top: 14px; }
+  .portrait figcaption b { color: var(--aqua); font-weight: 700; }
+  .ava { width: 28px; height: 28px; margin-right: 10px; border-radius: 50%; object-fit: cover; object-position: 50% 12%; vertical-align: middle; border: 1px solid var(--line); }
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin-top: 72px; border: 1px solid var(--line); border-radius: 20px; overflow: hidden; background: var(--line); }
   .stat { padding: 28px; background: var(--bg); }
   .stat b { display: block; font: 800 clamp(40px, 5vw, 64px)/1 var(--display); letter-spacing: -.03em; }
@@ -163,7 +183,7 @@
   footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
 
   @media (prefers-reduced-motion: reduce) {
-    .water-fill::before, .marquee-row, .lvl4 .gauge-track { animation: none; }
+    .water-fill::before, .marquee-row, .lvl4 .gauge-track, .p-wet img, .p-wet::before, .p-surface::before { animation: none; }
     .btn, .mail, .gauge-bar, .gauge-read b { transition: none; }
   }
 </style>
@@ -191,7 +211,7 @@
 
 <main id="top">
   <header class="hero wrap">
-    <p class="mono"><i aria-hidden="true"></i>Open to internships &amp; junior roles · Perak, MY</p>
+    <p class="mono"><img class="ava" src="assets/zol.webp" alt="" width="28" height="28"><i aria-hidden="true"></i>Open to internships &amp; junior roles · Perak, MY</p>
     <h1>
       <span class="line"><span>Hi, I'm Zol.</span></span>
       <span class="line soft"><span>I build things.</span></span>
@@ -208,7 +228,18 @@
 
   <section class="sec wrap" id="about" aria-labelledby="about-h">
     <p class="sec-label mono" id="about-h">01 · About</p>
-    <p class="about-text">I'm a Computer Science student at UiTM, moving from a Diploma into <em>Netcentric Computing</em>. I build fullstack web apps with Laravel and PHP, Android apps in Java, and features that use <em>Gemini</em> to make hard things simple. Before all that, I spent six months keeping an office's laptops, printers and networks running.</p>
+    <div class="about-grid">
+      <figure class="portrait">
+        <div class="pf">
+          <picture><source srcset="assets/zol.webp" type="image/webp"><img src="assets/zol.jpg" alt="Zol in a green blazer and tie, standing outside a campus building" width="620" height="920" loading="lazy" decoding="async"></picture>
+          <div class="p-wet" aria-hidden="true"><img src="assets/zol.webp" alt="" width="620" height="920" loading="lazy" decoding="async"></div>
+          <div class="p-surface" aria-hidden="true"></div>
+          <div class="staff" aria-hidden="true"><span style="bottom:32%">1.0 m</span><span style="bottom:72%">1.5 m</span></div>
+        </div>
+        <figcaption class="mono"><span>Sensor 01 · Zol</span><span>Depth <b class="p-depth">0.9 m</b></span></figcaption>
+      </figure>
+      <p class="about-text">I'm a Computer Science student at UiTM, moving from a Diploma into <em>Netcentric Computing</em>. I build fullstack web apps with Laravel and PHP, Android apps in Java, and features that use <em>Gemini</em> to make hard things simple. Before all that, I spent six months keeping an office's laptops, printers and networks running.</p>
+    </div>
     <div class="stats">
       <div class="stat"><b data-count="6">6</b><span>projects built across web, mobile, AI and IoT</span></div>
       <div class="stat"><b data-count="2">2</b><span>UiTM programmes: Diploma, then B.Sc. Netcentric</span></div>
@@ -463,6 +494,16 @@
       }
     },
   });
+
+  // The photo floods as you read the About text: knee deep to chest deep.
+  const portrait = document.querySelector('.portrait'), depthEl = document.querySelector('.p-depth');
+  const setWet = (p) => {
+    const top = 88 - p * 48;                       // % from the top of the frame where the water starts
+    portrait.style.setProperty('--wet', top + '%');
+    depthEl.textContent = (0.6 + (1 - top / 100) * 1.25).toFixed(1) + ' m';   // frame spans about 0.6 m to 1.85 m
+  };
+  if (reduce) setWet(0.4);
+  else ScrollTrigger.create({ trigger: '.about-grid', start: 'top 75%', end: 'bottom 35%', onUpdate: (self) => setWet(self.progress) , onRefresh: (self) => setWet(self.progress) });
 
   if (reduce) return;   // everything below is motion only
 

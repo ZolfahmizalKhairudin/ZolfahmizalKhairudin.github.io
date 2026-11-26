@@ -92,7 +92,7 @@
   .btn svg { width: 16px; height: 16px; }
 
   /* sections */
-  .sec { padding: clamp(96px, 14vw, 180px) 0; }
+  .sec { padding: clamp(56px, 7vw, 96px) 0; }
   .sec-label { display: flex; align-items: center; gap: 14px; margin: 0 0 36px; }
   .sec-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
   h2 { margin: 0; font: 800 clamp(40px, 7vw, 104px)/.92 var(--display); letter-spacing: -.04em; }
@@ -145,8 +145,8 @@
   @media (min-width: 900px) { .panel { grid-template-columns: 1.15fr .85fr; align-items: center; } .art { min-height: 340px; } }
 
   /* horizontal mode, set by JS on wide screens only */
-  .h-mode { padding-bottom: 0; }
-  .h-mode .work-pin { height: 100svh; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+  .h-mode { padding-top: 0; padding-bottom: 0; }
+  .h-mode .work-pin { height: 100svh; display: flex; flex-direction: column; justify-content: flex-start; padding-top: 88px; overflow: hidden; }
   .h-mode .work-head { margin-bottom: 32px; }
   .h-mode .track { display: flex; gap: 24px; width: max-content; padding-right: 20px; }
   .h-mode .panel { width: min(78vw, 1000px); flex: none; }
@@ -625,7 +625,7 @@
 
   // Projects: pinned horizontal ride on wide screens, plain stack elsewhere.
   const mm = gsap.matchMedia();
-  mm.add('(min-width: 900px)', () => {
+  mm.add('(min-width: 900px) and (min-height: 700px)', () => {
     const work = document.getElementById('work'), track = work.querySelector('.track');
     work.classList.add('h-mode');
     const dist = () => Math.max(0, track.scrollWidth - track.parentElement.clientWidth);
@@ -639,7 +639,7 @@
     }));
     return () => work.classList.remove('h-mode');
   });
-  mm.add('(max-width: 899px)', () => {
+  mm.add('(max-width: 899px), (max-height: 699px)', () => {
     gsap.utils.toArray('.panel').forEach((p) => gsap.from(p, { y: 60, opacity: 0, duration: 0.9, ease: 'power3.out', scrollTrigger: { trigger: p, start: 'top 88%' } }));
   });
 

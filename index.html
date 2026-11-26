@@ -8,14 +8,14 @@
 <meta name="theme-color" content="#0a0b0e">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #0a0b0e; --text: #eef1f5; --mute: #9aa2ad; --line: rgba(238,241,245,.12);
     --aqua: #7ce8d8; --blue: #4fb3ff; --amber: #ffc24b; --red: #ff6b6b;
     --lvl: var(--aqua);
-    --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
-    --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+    --display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+    --mono: "Space Mono", ui-monospace, Consolas, monospace;
     --body: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
   }
   * { box-sizing: border-box; }
@@ -65,7 +65,7 @@
   .nav { position: fixed; inset: 0 0 auto; z-index: 30; }
   .nav::before { content: ""; position: absolute; inset: 0 0 -28px; background: linear-gradient(var(--bg) 45%, rgba(10,11,14,0)); pointer-events: none; }
   .nav .wrap { position: relative; display: flex; align-items: center; justify-content: space-between; height: 72px; }
-  .logo { font: 800 20px/1 var(--display); letter-spacing: -.02em; text-decoration: none; }
+  .logo { font: 700 20px/1 var(--display); letter-spacing: -.02em; text-decoration: none; }
   .logo span { color: var(--aqua); }
   .nav ul { display: flex; gap: 4px; margin: 0; padding: 4px; list-style: none; border: 1px solid var(--line); border-radius: 999px; background: rgba(10,11,14,.6); backdrop-filter: blur(10px); }
   .nav ul a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 999px; font-size: 14px; font-weight: 600; text-decoration: none; transition: background-color .2s, color .2s; }
@@ -77,7 +77,7 @@
   .hero { display: grid; align-content: end; min-height: 100svh; padding: 120px 0 72px; }
   .hero .mono { margin: 0 0 28px; }
   .hero .mono i { display: inline-block; width: 8px; height: 8px; margin-right: 10px; border-radius: 50%; background: var(--aqua); box-shadow: 0 0 0 4px rgba(124,232,216,.18); vertical-align: 1px; }
-  h1 { margin: 0; font: 800 clamp(56px, 12.5vw, 196px)/.86 var(--display); letter-spacing: -.045em; }
+  h1 { margin: 0; font: 700 clamp(56px, 12.5vw, 196px)/.86 var(--display); letter-spacing: -.045em; }
   h1 .soft { color: transparent; -webkit-text-stroke: 1.5px var(--text); }
   .line { display: block; overflow: hidden; padding-bottom: .04em; }
   .line > span { display: inline-block; }
@@ -95,7 +95,7 @@
   .sec { padding: clamp(56px, 7vw, 96px) 0; }
   .sec-label { display: flex; align-items: center; gap: 14px; margin: 0 0 36px; }
   .sec-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-  h2 { margin: 0; font: 800 clamp(40px, 7vw, 104px)/.92 var(--display); letter-spacing: -.04em; }
+  h2 { margin: 0; font: 700 clamp(40px, 7vw, 104px)/.92 var(--display); letter-spacing: -.04em; }
 
   .about-text { max-width: 1040px; margin: 0; font: 700 clamp(24px, 2.9vw, 44px)/1.2 var(--display); letter-spacing: -.02em; }
   .about-text .word { display: inline-block; white-space: pre; }
@@ -122,7 +122,7 @@
   .ava { width: 28px; height: 28px; margin-right: 10px; border-radius: 50%; object-fit: cover; object-position: 50% 12%; vertical-align: middle; border: 1px solid var(--line); }
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin-top: 72px; border: 1px solid var(--line); border-radius: 20px; overflow: hidden; background: var(--line); }
   .stat { padding: 28px; background: var(--bg); }
-  .stat b { display: block; font: 800 clamp(40px, 5vw, 64px)/1 var(--display); letter-spacing: -.03em; }
+  .stat b { display: block; font: 700 clamp(40px, 5vw, 64px)/1 var(--display); letter-spacing: -.03em; }
   .stat span { display: block; margin-top: 8px; color: var(--mute); font-size: 15px; }
   @media (max-width: 640px) { .stats { grid-template-columns: 1fr; } }
 
@@ -132,7 +132,7 @@
   .track { display: grid; gap: 20px; }
   .panel { position: relative; display: grid; grid-template-columns: 1fr; gap: 28px; padding: clamp(24px, 4vw, 48px); border: 1px solid var(--line); border-radius: 28px; background: rgba(16,18,23,.82); backdrop-filter: blur(6px); overflow: hidden; }
   .panel-top { display: flex; justify-content: space-between; gap: 12px; }
-  .panel h3 { margin: 0 0 12px; font: 800 clamp(36px, 5vw, 72px)/.95 var(--display); letter-spacing: -.035em; }
+  .panel h3 { margin: 0 0 12px; font: 700 clamp(36px, 5vw, 72px)/.95 var(--display); letter-spacing: -.035em; }
   .panel .pitch { margin: 0; max-width: 520px; font-size: clamp(17px, 1.5vw, 20px); }
   .panel ul { margin: 20px 0 0; padding: 0; list-style: none; color: var(--mute); font-size: 15.5px; }
   .panel li { position: relative; padding-left: 22px; }
@@ -165,7 +165,7 @@
 
   /* skills */
   .marquee { display: flex; overflow: hidden; margin: 56px 0; border-block: 1px solid var(--line); padding: 22px 0; -webkit-mask: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); mask: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
-  .marquee-row { display: flex; flex: none; gap: 48px; padding-right: 48px; font: 800 clamp(32px, 5vw, 64px)/1 var(--display); letter-spacing: -.03em; white-space: nowrap; animation: slide 38s linear infinite; }
+  .marquee-row { display: flex; flex: none; gap: 48px; padding-right: 48px; font: 700 clamp(32px, 5vw, 64px)/1 var(--display); letter-spacing: -.03em; white-space: nowrap; animation: slide 38s linear infinite; }
   .marquee-row span:nth-child(even) { color: transparent; -webkit-text-stroke: 1px var(--mute); }
   @keyframes slide { to { transform: translateX(-100%); } }
   .groups { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; border: 1px solid var(--line); border-radius: 20px; overflow: hidden; background: var(--line); }

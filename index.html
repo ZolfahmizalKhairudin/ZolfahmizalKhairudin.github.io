@@ -31,6 +31,11 @@
   .skip:not(:focus) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .skip:focus { position: fixed; left: 16px; top: 12px; z-index: 50; padding: 10px 16px; border-radius: 999px; background: var(--text); color: var(--bg); font-weight: 700; }
 
+  /* moving contour map behind everything */
+  .contours { position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; pointer-events: none;
+    -webkit-mask: radial-gradient(ellipse 120% 90% at 50% 40%, #000 40%, transparent 100%);
+            mask: radial-gradient(ellipse 120% 90% at 50% 40%, #000 40%, transparent 100%); }
+
   /* the rising water */
   .water { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
   .water-fill { position: absolute; left: 0; right: 0; bottom: 0; height: 100%; transform: translateY(96%); background: linear-gradient(180deg, rgba(79,179,255,.16), rgba(124,232,216,.06) 60%, rgba(79,179,255,.03)); will-change: transform; }
@@ -191,6 +196,7 @@
 <body>
 <a class="skip" href="#work">Skip to projects</a>
 
+<canvas class="contours" aria-hidden="true"></canvas>
 <div class="water" aria-hidden="true"><div class="water-fill"></div></div>
 
 <div class="gauge" aria-hidden="true">
@@ -430,6 +436,83 @@
   </div>
 </footer>
 
+<script>
+// Contour map: a slowly drifting height field drawn as topographic lines (marching squares).
+(() => {
+  const cv = document.querySelector('.contours'), ctx = cv.getContext('2d');
+  if (!ctx) return;
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const CELL = 18, LEVELS = 11;
+  let W, H, dpr, cols, rows, field;
+
+  // small seeded value noise in 3D (x, y, time)
+  const P = new Uint8Array(512);
+  { const p = [...Array(256).keys()]; let seed = 7;
+    for (let i = 255; i > 0; i--) { seed = (seed * 16807) % 2147483647; const j = seed % (i + 1); [p[i], p[j]] = [p[j], p[i]]; }
+    for (let i = 0; i < 512; i++) P[i] = p[i & 255]; }
+  const fade = (t) => t * t * (3 - 2 * t), mix = (a, b, t) => a + (b - a) * t;
+  const h = (x, y, z) => P[P[P[x & 255] + (y & 255)] + (z & 255)] / 255;
+  const noise = (x, y, z) => {
+    const X = Math.floor(x), Y = Math.floor(y), Z = Math.floor(z), u = fade(x - X), v = fade(y - Y), w = fade(z - Z);
+    const a = mix(mix(h(X, Y, Z), h(X + 1, Y, Z), u), mix(h(X, Y + 1, Z), h(X + 1, Y + 1, Z), u), v);
+    const b = mix(mix(h(X, Y, Z + 1), h(X + 1, Y, Z + 1), u), mix(h(X, Y + 1, Z + 1), h(X + 1, Y + 1, Z + 1), u), v);
+    return mix(a, b, w);
+  };
+
+  const resize = () => {
+    dpr = Math.min(devicePixelRatio || 1, 1.5); W = innerWidth; H = innerHeight;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    cols = Math.ceil(W / CELL) + 2; rows = Math.ceil(H / CELL) + 2; field = new Float32Array(cols * rows);
+  };
+
+  const mouse = { x: -1e4, y: -1e4, tx: -1e4, ty: -1e4 };
+  if (!still) addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse') { mouse.tx = e.clientX; mouse.ty = e.clientY; } }, { passive: true });
+
+  const draw = (t) => {
+    mouse.x += (mouse.tx - mouse.x) * 0.08; mouse.y += (mouse.ty - mouse.y) * 0.08;
+    const z = t * 0.00005, sy = scrollY * 0.0006, R2 = 170 * 170;
+    for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+      const x = i * CELL, y = j * CELL, nx = x * 0.0032, ny = y * 0.0032 + sy;
+      let v = noise(nx, ny, z) * 0.68 + noise(nx * 2.1, ny * 2.1, z * 1.4 + 9) * 0.32;
+      const dx = x - mouse.x, dy = y - mouse.y; v += 0.22 * Math.exp(-(dx * dx + dy * dy) / R2);
+      field[j * cols + i] = v;
+    }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H); ctx.lineWidth = 1;
+    for (let k = 0; k < LEVELS; k++) {
+      const L = 0.22 + k * 0.05, major = k % 3 === 0;
+      ctx.strokeStyle = major ? 'rgba(124,232,216,0.16)' : 'rgba(238,241,245,0.07)';
+      ctx.beginPath();
+      for (let j = 0; j < rows - 1; j++) for (let i = 0; i < cols - 1; i++) {
+        const a = field[j * cols + i], b = field[j * cols + i + 1], c = field[(j + 1) * cols + i + 1], d = field[(j + 1) * cols + i];
+        const idx = (a > L) << 3 | (b > L) << 2 | (c > L) << 1 | (d > L);
+        if (idx === 0 || idx === 15) continue;
+        const x = i * CELL, y = j * CELL;
+        const T = () => [x + CELL * (L - a) / (b - a), y], Rt = () => [x + CELL, y + CELL * (L - b) / (c - b)];
+        const B = () => [x + CELL * (L - d) / (c - d), y + CELL], Lf = () => [x, y + CELL * (L - a) / (d - a)];
+        const seg = (p, q) => { ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); };
+        switch (idx) {
+          case 1: case 14: seg(Lf(), B()); break;
+          case 2: case 13: seg(B(), Rt()); break;
+          case 3: case 12: seg(Lf(), Rt()); break;
+          case 4: case 11: seg(T(), Rt()); break;
+          case 6: case 9: seg(T(), B()); break;
+          case 7: case 8: seg(Lf(), T()); break;
+          case 5: seg(T(), Rt()); seg(Lf(), B()); break;
+          case 10: seg(Lf(), T()); seg(B(), Rt()); break;
+        }
+      }
+      ctx.stroke();
+    }
+  };
+
+  resize(); draw(0);
+  addEventListener('resize', () => { resize(); draw(performance.now()); });
+  if (still) return;   // one still frame for reduced motion
+  let last = 0;
+  const loop = (t) => { if (t - last > 33) { last = t; draw(t); } requestAnimationFrame(loop); };   // about 30 fps; pauses in hidden tabs
+  requestAnimationFrame(loop);
+})();
+</script>
 <script src="vendor/scroll/gsap.min.js"></script>
 <script src="vendor/scroll/ScrollTrigger.min.js"></script>
 <script src="vendor/scroll/lenis.min.js"></script>

@@ -196,12 +196,12 @@
 
   /* easter egg */
   .egg-btn { padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
-  .egg { width: min(360px, calc(100% - 32px)); padding: 28px; border: 1px solid var(--line); border-radius: 22px; background: #101218; color: var(--text); }
+  .egg { width: min(360px, calc(100% - 32px)); padding: 28px; border: 1px solid var(--line); border-radius: 22px; background: #101218; color: var(--text); overflow: hidden; }
   .egg::backdrop { background: rgba(5,6,8,.72); backdrop-filter: blur(4px); }
-  .egg form { display: grid; gap: 12px; margin: 0; }
+  .egg form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin: 0; }
   .egg p { margin: 0; }
   .egg label { font-weight: 600; }
-  .egg input { min-height: 52px; padding: 0 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); color: var(--text); font: 700 24px/1 var(--mono); letter-spacing: .4em; text-align: center; }
+  .egg input { width: 100%; min-width: 0; min-height: 52px; padding: 0 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); color: var(--text); font: 700 24px/1 var(--mono); letter-spacing: .4em; text-indent: .4em; text-align: center; }
   .egg input:focus-visible { outline: 2px solid var(--aqua); outline-offset: 2px; }
   .egg .egg-msg { min-height: 1.4em; color: var(--amber); font: 500 13px/1.4 var(--mono); }
   .egg .btns { justify-content: flex-end; }

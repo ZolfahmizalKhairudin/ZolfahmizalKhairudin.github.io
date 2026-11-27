@@ -157,7 +157,7 @@ function start() {
 
   // click the avatar 7 times in a row and it gives up the code
   const bubble = document.querySelector('.avatar-bubble');
-  let clicks = 0, lastClick = 0, annoyedUntil = 0;
+  let clickTimes = [], annoyedUntil = 0;
   const annoyed = () => {
     face.target = 1; annoyedUntil = performance.now() + 4200;
     if (bubble) { bubble.hidden = false; requestAnimationFrame(() => bubble.classList.add('show')); }
@@ -170,8 +170,9 @@ function start() {
   };
   const countClick = () => {
     const now = performance.now();
-    clicks = now - lastClick < 1500 ? clicks + 1 : 1; lastClick = now;
-    if (clicks >= 7 && now > annoyedUntil) { clicks = 0; annoyed(); return true; }
+    if (clickTimes.length && now - clickTimes[clickTimes.length - 1] < 60) return false;   // one press reported twice
+    clickTimes = clickTimes.filter((c) => now - c < 4000); clickTimes.push(now);       // only the last 4 seconds count
+    if (clickTimes.length >= 7 && now > annoyedUntil) { clickTimes = []; annoyed(); return true; }
     return false;
   };
 

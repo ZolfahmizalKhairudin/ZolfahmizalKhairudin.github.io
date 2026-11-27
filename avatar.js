@@ -82,7 +82,7 @@ function start() {
   for (const sx of [-1, 1]) add(head, new THREE.SphereGeometry(0.25, 18, 12), hairM, { p: [sx * 0.5, 0.26, -0.08], s: [0.6, 1, 1.05], line: 0.05 });
 
   // face
-  for (const sx of [-1, 1]) add(head, new THREE.BoxGeometry(0.2, 0.045, 0.05), toon(C.hair), { p: [sx * 0.22, 0.27, 0.55], r: [0, 0, sx * -0.12] });
+  const brows = [-1, 1].map((sx) => ({ sx, m: add(head, new THREE.BoxGeometry(0.2, 0.045, 0.05), toon(C.hair), { p: [sx * 0.22, 0.27, 0.55], r: [0, 0, sx * -0.12] }) }));
   const eyes = new THREE.Group(); head.add(eyes);
   const pupils = [];
   for (const sx of [-1, 1]) {
@@ -103,7 +103,7 @@ function start() {
   }
   add(head, new THREE.BoxGeometry(0.07, 0.03, 0.03), frameM, { p: [0, 0.15, 0.62] });   // bridge
   add(head, new THREE.SphereGeometry(0.075, 16, 12), toon(C.skin), { p: [0, -0.07, 0.6], s: [0.8, 1, 1] });
-  add(head, new THREE.TorusGeometry(0.1, 0.018, 6, 16, Math.PI), toon(C.mouth), { p: [0, -0.24, 0.55], s: [1, 0.35, 1], r: [0, 0, Math.PI] });
+  const mouth = add(head, new THREE.TorusGeometry(0.1, 0.018, 6, 16, Math.PI), toon(C.mouth), { p: [0, -0.24, 0.55], s: [1, 0.35, 1], r: [0, 0, Math.PI] });
 
   // light: soft fill, a white key, and the page's aqua and blue as rim lights
   scene.add(new THREE.HemisphereLight(0xe6eeff, 0x0a0b0e, 1.2));
@@ -147,7 +147,36 @@ function start() {
   new ResizeObserver(() => { size(); if (still) renderer.render(scene, camera); }).observe(box);
   size();
 
+  // annoyed face: brows slant in, lids drop, smile flips to a frown (a = 0 calm, 1 annoyed)
+  const face = { a: 0, target: 0 };
+  const setFace = (a, blink = 0) => {
+    brows.forEach(({ sx, m }) => { m.rotation.z = sx * -0.12 + a * sx * 0.38; m.position.y = 0.27 - a * 0.045; });
+    eyes.scale.y = (1 - blink * 0.9) * (1 - 0.48 * a);
+    mouth.scale.y = 0.35 - 0.7 * a;
+  };
+
+  // click the avatar 7 times in a row and it gives up the code
+  const bubble = document.querySelector('.avatar-bubble');
+  let clicks = 0, lastClick = 0, annoyedUntil = 0;
+  const annoyed = () => {
+    face.target = 1; annoyedUntil = performance.now() + 4200;
+    if (bubble) { bubble.hidden = false; requestAnimationFrame(() => bubble.classList.add('show')); }
+    setTimeout(() => {
+      face.target = 0;
+      if (bubble) { bubble.classList.remove('show'); setTimeout(() => { bubble.hidden = true; }, 300); }
+      if (still) { setFace(0); renderer.render(scene, camera); }
+    }, 4200);
+    if (still) { setFace(1); renderer.render(scene, camera); }
+  };
+  const countClick = () => {
+    const now = performance.now();
+    clicks = now - lastClick < 1500 ? clicks + 1 : 1; lastClick = now;
+    if (clicks >= 7 && now > annoyedUntil) { clicks = 0; annoyed(); return true; }
+    return false;
+  };
+
   if (still) {
+    box.addEventListener('pointerdown', countClick);
     pivot.rotation.set(0.04, -0.25, 0); body.rotation.y = -0.08; renderer.render(scene, camera);
     addEventListener('zol:egg', () => {
       egg.visible = true; egg.scale.z = 1;
@@ -172,7 +201,7 @@ function start() {
 
   // click: a happy hop
   let hopV = 0, hopY = 0;
-  box.addEventListener('pointerdown', () => { if (hopY <= 0.001) hopV = 0.06; });
+  box.addEventListener('pointerdown', () => { if (!countClick() && hopY <= 0.001 && face.target === 0) hopV = 0.06; });
   addEventListener('zol:egg', () => { egg.visible = true; eggS.on = true; eggS.t = 0; if (hopY <= 0.001) hopV = 0.05; });
 
   let visible = true, running = false, intro = 0, nextBlink = 2, blinkT = -1;
@@ -188,13 +217,17 @@ function start() {
     const k = 1 - Math.pow(0.0015, dt);          // frame-rate independent easing
     look.x += (look.tx - look.x) * k; look.y += (look.ty - look.y) * k;
 
-    pivot.rotation.y = look.x * 0.7; pivot.rotation.x = look.y * 0.35; pivot.rotation.z = -look.x * 0.06;
+    face.a += (face.target - face.a) * (1 - Math.pow(0.0005, dt));
+    const lx = look.x + (0.55 - look.x) * face.a, ly = look.y + (-0.45 - look.y) * face.a;   // annoyed: look away and up
+    pivot.rotation.y = lx * 0.7; pivot.rotation.x = ly * 0.35; pivot.rotation.z = -lx * 0.06 + face.a * 0.12;
     body.rotation.y = look.x * 0.22;
-    pupils.forEach((p, i) => { p.position.x = (i ? 0.205 : -0.205) + look.x * 0.03; p.position.y = 0.075 - look.y * 0.022; });
+    pupils.forEach((p, i) => { p.position.x = (i ? 0.205 : -0.205) + lx * 0.03; p.position.y = 0.075 - ly * 0.022 + face.a * 0.02; });
 
     // blink
     if (t > nextBlink && blinkT < 0) blinkT = 0;
-    if (blinkT >= 0) { blinkT += dt; const b = Math.sin(Math.min(blinkT / 0.16, 1) * Math.PI); eyes.scale.y = 1 - b * 0.9; if (blinkT > 0.16) { blinkT = -1; eyes.scale.y = 1; nextBlink = t + 2.5 + Math.random() * 3; } }
+    let blink = 0;
+    if (blinkT >= 0) { blinkT += dt; blink = Math.sin(Math.min(blinkT / 0.16, 1) * Math.PI); if (blinkT > 0.16) { blinkT = -1; blink = 0; nextBlink = t + 2.5 + Math.random() * 3; } }
+    setFace(face.a, blink);
 
     // hop, breathing and the intro pop
     hopV -= 0.004; hopY = Math.max(0, hopY + hopV); if (hopY === 0) hopV = 0;

@@ -194,6 +194,22 @@
   .contact .btns { justify-content: center; margin-top: 32px; }
   .said { min-height: 1.6em; margin: 16px 0 0; color: var(--aqua); font: 500 13px/1.6 var(--mono); }
 
+  /* easter egg */
+  .egg-btn { padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+  .egg { width: min(360px, calc(100% - 32px)); padding: 28px; border: 1px solid var(--line); border-radius: 22px; background: #101218; color: var(--text); }
+  .egg::backdrop { background: rgba(5,6,8,.72); backdrop-filter: blur(4px); }
+  .egg form { display: grid; gap: 12px; margin: 0; }
+  .egg p { margin: 0; }
+  .egg label { font-weight: 600; }
+  .egg input { min-height: 52px; padding: 0 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); color: var(--text); font: 700 24px/1 var(--mono); letter-spacing: .4em; text-align: center; }
+  .egg input:focus-visible { outline: 2px solid var(--aqua); outline-offset: 2px; }
+  .egg .egg-msg { min-height: 1.4em; color: var(--amber); font: 500 13px/1.4 var(--mono); }
+  .egg .btns { justify-content: flex-end; }
+  .egg.shake { animation: shake .4s; }
+  @keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+  .stage h1 { transition: opacity .5s; }
+  .egg-on .stage h1 { opacity: .12; }
+  @media (prefers-reduced-motion: reduce) { .egg.shake { animation: none; } }
   footer { padding: 32px 0 48px; border-top: 1px solid var(--line); color: var(--mute); font-size: 14px; }
   @media (max-width: 760px) { footer { padding-bottom: 96px; } .hero { padding-bottom: 104px; } }
   @media (max-width: 360px) { .nav ul a { padding: 0 10px; font-size: 13px; } }
@@ -437,10 +453,20 @@
 
 <footer>
   <div class="wrap">
-    <span>&copy; 2026 Muhamad Zolfahmizal Mohamad Khairudin</span>
+    <span><button class="egg-btn" type="button" id="egg-open" aria-label="Secret">&copy;</button> 2026 Muhamad Zolfahmizal Mohamad Khairudin</span>
     <span>Yes, this page is built with the help of Claude.</span>
   </div>
 </footer>
+
+<dialog class="egg" id="egg" aria-labelledby="egg-title">
+  <form id="egg-form" method="dialog">
+    <p class="mono" id="egg-title">Secret level</p>
+    <label for="egg-code">Enter the code</label>
+    <input id="egg-code" name="code" inputmode="numeric" maxlength="4" autocomplete="off" spellcheck="false">
+    <p class="egg-msg" id="egg-msg" aria-live="polite"></p>
+    <div class="btns"><button class="btn" type="submit" value="cancel">Close</button><button class="btn solid" type="submit" value="go">Enter</button></div>
+  </form>
+</dialog>
 
 <script>
 // Contour map: a slowly drifting height field drawn as topographic lines (marching squares).
@@ -538,6 +564,28 @@
     said.textContent = ok ? 'Email copied. Talk soon.' : 'Could not copy. Use the email link above.';
   });
 
+  // Easter egg: the footer's © opens a code box; 6767 makes the avatar do something silly.
+  const egg = document.getElementById('egg'), eggForm = document.getElementById('egg-form'), eggCode = document.getElementById('egg-code'), eggMsg = document.getElementById('egg-msg');
+  document.getElementById('egg-open').addEventListener('click', () => { eggCode.value = ''; eggMsg.textContent = ''; egg.showModal(); });
+  eggForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (e.submitter && e.submitter.value === 'cancel') { egg.close(); return; }
+    if (eggCode.value.trim() !== '6767') {
+      eggMsg.textContent = 'Nope. Try again.';
+      egg.classList.remove('shake'); void egg.offsetWidth; egg.classList.add('shake');
+      eggCode.select(); return;
+    }
+    egg.close();
+    if (document.documentElement.classList.contains('no-3d')) return;
+    const top = () => window.__zolLenis ? window.__zolLenis.scrollTo(0, { duration: 1.4 }) : scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    top();
+    setTimeout(() => {
+      const hero = document.querySelector('.hero'); hero.classList.add('egg-on');
+      dispatchEvent(new Event('zol:egg'));
+      setTimeout(() => hero.classList.remove('egg-on'), 7400);
+    }, scrollY > 50 ? 1500 : 200);
+  });
+
   if (!window.gsap || !window.ScrollTrigger) return;   // page still reads fine without motion
   gsap.registerPlugin(ScrollTrigger);
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -546,6 +594,7 @@
   let lenis = null;
   if (!reduce && window.Lenis) {
     lenis = new Lenis({ lerp: 0.1 });
+    window.__zolLenis = lenis;
     lenis.on('scroll', ScrollTrigger.update);
     gsap.ticker.add((t) => lenis.raf(t * 1000));
     gsap.ticker.lagSmoothing(0);

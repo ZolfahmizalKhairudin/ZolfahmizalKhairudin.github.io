@@ -111,6 +111,14 @@ function start() {
   const rimA = new THREE.DirectionalLight(0x7ce8d8, 3); rimA.position.set(-4, 2, -4); scene.add(rimA);
   const rimB = new THREE.DirectionalLight(0x4fb3ff, 2); rimB.position.set(4, 1, -3); scene.add(rimB);
 
+  // easter egg: a cartoon sausage tucked inside the bust until the secret code is entered
+  const egg = new THREE.Group(); egg.position.set(0, -1.25, 0.6); egg.rotation.x = 0.75; egg.scale.set(1, 1, 0.001); egg.visible = false; body.add(egg);
+  const sGeo = new THREE.CapsuleGeometry(0.085, 0.34, 8, 16); sGeo.translate(0, 0.255, 0); sGeo.rotateX(Math.PI / 2);
+  add(egg, sGeo, toon(0xc0603a), { line: 0.06 });
+  const zig = new THREE.CatmullRomCurve3([...Array(8)].map((_, i) => new THREE.Vector3(Math.sin(i * 1.7) * 0.045, 0.085, 0.07 + i * 0.045)));
+  add(egg, new THREE.TubeGeometry(zig, 48, 0.013, 6), toon(0xf2c230));
+  const eggS = { on: false, t: 0, s: 0, v: 0 };
+
   root.position.y = -0.95;
   const baseY = root.position.y;
 
@@ -124,7 +132,14 @@ function start() {
   new ResizeObserver(() => { size(); if (still) renderer.render(scene, camera); }).observe(box);
   size();
 
-  if (still) { pivot.rotation.set(0.04, -0.25, 0); body.rotation.y = -0.08; renderer.render(scene, camera); return; }
+  if (still) {
+    pivot.rotation.set(0.04, -0.25, 0); body.rotation.y = -0.08; renderer.render(scene, camera);
+    addEventListener('zol:egg', () => {
+      egg.visible = true; egg.scale.z = 1; renderer.render(scene, camera);
+      setTimeout(() => { egg.visible = false; renderer.render(scene, camera); }, 7000);
+    });
+    return;
+  }
 
   // input: look at the pointer; wander when idle
   const look = { x: 0, y: 0, tx: 0, ty: 0 };
@@ -141,6 +156,7 @@ function start() {
   // click: a happy hop
   let hopV = 0, hopY = 0;
   box.addEventListener('pointerdown', () => { if (hopY <= 0.001) hopV = 0.06; });
+  addEventListener('zol:egg', () => { egg.visible = true; eggS.on = true; eggS.t = 0; if (hopY <= 0.001) hopV = 0.05; });
 
   let visible = true, running = false, intro = 0, nextBlink = 2, blinkT = -1;
   new IntersectionObserver(([en]) => { visible = en.isIntersecting; if (visible && !running) requestAnimationFrame(loop); }).observe(box);
@@ -170,6 +186,15 @@ function start() {
     root.scale.setScalar(0.6 + 0.4 * e);
     root.position.y = baseY + hopY + Math.sin(t * 1.6) * 0.025;
     body.scale.y = 1 + Math.sin(t * 1.6) * 0.006;
+
+    // easter egg: boing out on a spring, wobble, then tuck back in
+    if (egg.visible) {
+      if (eggS.on && (eggS.t += dt) > 7) eggS.on = false;
+      eggS.v = eggS.v * 0.8 + ((eggS.on ? 1 : 0) - eggS.s) * 0.16; eggS.s += eggS.v;
+      egg.scale.z = Math.max(0.001, eggS.s);
+      egg.rotation.x = 0.75 + Math.sin(t * 9) * 0.09 * eggS.s;
+      if (!eggS.on && eggS.s < 0.01) egg.visible = false;
+    }
 
     renderer.render(scene, camera);
     requestAnimationFrame(loop);

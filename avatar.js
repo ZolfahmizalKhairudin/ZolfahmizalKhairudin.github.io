@@ -34,14 +34,13 @@ function start() {
 
   const C = { skin: 0xa8714f, hair: 0x15121a, blazer: 0x22493a, lapel: 0x2c5c49, shirt: 0x131419, frame: 0x101013, white: 0xf3f0ea, pupil: 0x1b1310, mouth: 0x6e3a2c, gold: 0xd8b25a, pin: 0xe8892f };
 
-  // striped school tie: green, orange and black diagonals
+  // school tie: dark green with thin orange stripes edged in black, drawn as a seamless diagonal tile
   const tieTex = (() => {
     const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
-    g.fillStyle = '#1f4a35'; g.fillRect(0, 0, 64, 64);
-    g.save(); g.translate(32, 32); g.rotate(-Math.PI / 4); g.translate(-48, -48);
-    for (let y = 0; y < 96; y += 24) { g.fillStyle = '#e07a2a'; g.fillRect(0, y, 96, 5); g.fillStyle = '#0d0d10'; g.fillRect(0, y + 6, 96, 3); }
-    g.restore();
-    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(5, 5); t.colorSpace = THREE.SRGBColorSpace; return t;
+    g.fillStyle = '#21473a'; g.fillRect(0, 0, 64, 64);
+    const stripe = (off, w, col) => { g.strokeStyle = col; g.lineWidth = w; for (let k = -64; k <= 128; k += 32) { g.beginPath(); g.moveTo(k + off, 0); g.lineTo(k + off - 64, 64); g.stroke(); } };
+    stripe(0, 3.5, '#ef8a2c'); stripe(4, 2, '#0c0c0f'); stripe(-4, 2, '#0c0c0f');
+    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(2.4, 2.4); t.colorSpace = THREE.SRGBColorSpace; return t;
   })();
 
   const root = new THREE.Group(); scene.add(root);
@@ -57,8 +56,9 @@ function start() {
   };
   const shp = (pts) => { const s = new THREE.Shape(); s.moveTo(...pts[0]); pts.slice(1).forEach((q) => s.lineTo(...q)); s.closePath(); return s; };
   front(shp([[-0.3, 0.04], [0.3, 0.04], [0, -0.9]]), toon(C.shirt), 0.6);                                         // shirt V
-  front(shp([[-0.075, -0.06], [0.075, -0.06], [0.12, -0.66], [0, -0.8], [-0.12, -0.66]]), toon(0xffffff, { map: tieTex }), 0.625);   // tie
-  add(body, new THREE.BoxGeometry(0.17, 0.12, 0.08), toon(0x1f4a35, { map: tieTex }), { p: [0, -0.02, 0.62], r: [-0.3, 0, 0] });     // knot
+  front(shp([[-0.085, -0.08], [0.085, -0.08], [0.16, -0.72], [0, -0.86], [-0.16, -0.72]]), toon(0xffffff, { map: tieTex }), 0.625);   // tie blade
+  front(shp([[-0.11, 0.05], [0.11, 0.05], [0.075, -0.11], [-0.075, -0.11]]), toon(0xffffff, { map: tieTex }), 0.64, 0.05);           // knot
+  add(body, new THREE.BoxGeometry(0.26, 0.035, 0.03), toon(C.gold), { p: [0, -0.5, 0.82], r: [-0.3, 0, 0] });                         // tie clip
   front(shp([[-0.3, 0.04], [-0.04, -0.92], [-0.5, -0.62], [-0.66, -0.06]]), toon(C.lapel), 0.645);                 // lapels
   front(shp([[0.3, 0.04], [0.04, -0.92], [0.5, -0.62], [0.66, -0.06]]), toon(C.lapel), 0.645);
   add(body, new THREE.OctahedronGeometry(0.06), toon(C.pin), { p: [-0.42, -0.3, 0.74], s: [1.3, 1, 0.5] });      // lapel pin
@@ -86,15 +86,22 @@ function start() {
   const eyes = new THREE.Group(); head.add(eyes);
   const pupils = [];
   for (const sx of [-1, 1]) {
-    add(eyes, new THREE.SphereGeometry(0.085, 18, 12), toon(C.white), { p: [sx * 0.22, 0.08, 0.53], s: [1.2, 1, 0.5] });
-    pupils.push(add(eyes, new THREE.SphereGeometry(0.048, 14, 10), new THREE.MeshBasicMaterial({ color: C.pupil }), { p: [sx * 0.22, 0.075, 0.575] }));
+    add(eyes, new THREE.SphereGeometry(0.085, 18, 12), toon(C.white), { p: [sx * 0.205, 0.08, 0.53], s: [1.2, 1, 0.5] });
+    pupils.push(add(eyes, new THREE.SphereGeometry(0.048, 14, 10), new THREE.MeshBasicMaterial({ color: C.pupil }), { p: [sx * 0.205, 0.075, 0.575] }));
   }
   const frameM = toon(C.frame);
+  // thick, squarish frames with rounded corners, angled slightly to wrap the face
+  const rr = (w, h, r) => { const s = new THREE.Shape(), x = -w / 2, y = -h / 2;
+    s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r); s.lineTo(x + w, y + h - r); s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r); s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y); return s; };
+  const rim = rr(0.38, 0.27, 0.07); rim.holes.push(rr(0.31, 0.2, 0.045));
+  const rimGeo = new THREE.ExtrudeGeometry(rim, { depth: 0.035, bevelEnabled: true, bevelThickness: 0.008, bevelSize: 0.006, bevelSegments: 2, curveSegments: 10 });
+  rimGeo.translate(0, 0, -0.0175);
   for (const sx of [-1, 1]) {
-    add(head, new THREE.TorusGeometry(0.17, 0.022, 8, 36), frameM, { p: [sx * 0.23, 0.09, 0.6], s: [1.22, 0.88, 1] });
-    add(head, new THREE.BoxGeometry(0.025, 0.025, 0.5), frameM, { p: [sx * 0.45, 0.12, 0.34], r: [0, sx * -0.18, 0] });
+    add(head, rimGeo, frameM, { p: [sx * 0.205, 0.09, 0.6], r: [0, sx * 0.14, 0] });
+    add(head, new THREE.BoxGeometry(0.03, 0.03, 0.5), frameM, { p: [sx * 0.43, 0.13, 0.34], r: [0, sx * -0.18, 0] });
   }
-  add(head, new THREE.CylinderGeometry(0.016, 0.016, 0.14, 8), frameM, { p: [0, 0.13, 0.62], r: [0, 0, Math.PI / 2] });
+  add(head, new THREE.BoxGeometry(0.07, 0.03, 0.03), frameM, { p: [0, 0.15, 0.62] });   // bridge
   add(head, new THREE.SphereGeometry(0.075, 16, 12), toon(C.skin), { p: [0, -0.07, 0.6], s: [0.8, 1, 1] });
   add(head, new THREE.TorusGeometry(0.1, 0.018, 6, 16, Math.PI), toon(C.mouth), { p: [0, -0.24, 0.55], s: [1, 0.35, 1], r: [0, 0, Math.PI] });
 
@@ -150,7 +157,7 @@ function start() {
 
     pivot.rotation.y = look.x * 0.7; pivot.rotation.x = look.y * 0.35; pivot.rotation.z = -look.x * 0.06;
     body.rotation.y = look.x * 0.22;
-    pupils.forEach((p, i) => { p.position.x = (i ? 0.22 : -0.22) + look.x * 0.03; p.position.y = 0.075 - look.y * 0.022; });
+    pupils.forEach((p, i) => { p.position.x = (i ? 0.205 : -0.205) + look.x * 0.03; p.position.y = 0.075 - look.y * 0.022; });
 
     // blink
     if (t > nextBlink && blinkT < 0) blinkT = 0;

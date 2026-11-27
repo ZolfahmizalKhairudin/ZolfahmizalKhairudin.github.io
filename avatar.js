@@ -122,7 +122,7 @@ function start() {
   // easter egg: arms that pop up and do the "six seven" hands (palms up, bobbing in turn)
   const arms = [];
   for (const sx of [-1, 1]) {
-    const arm = new THREE.Group(); arm.position.set(sx * 0.82, -1.42, 0.66); arm.visible = false; body.add(arm);
+    const arm = new THREE.Group(); arm.position.set(sx * 0.84, -1.02, 0.7); arm.visible = false; body.add(arm);
     const slGeo = new THREE.CylinderGeometry(0.12, 0.14, 0.8, 16); slGeo.translate(0, 0.4, 0);
     add(arm, slGeo, toon(C.blazer), { line: 0.05 });
     add(arm, new THREE.CylinderGeometry(0.095, 0.095, 0.07, 16), toon(C.shirt), { p: [0, 0.83, 0] });            // shirt cuff

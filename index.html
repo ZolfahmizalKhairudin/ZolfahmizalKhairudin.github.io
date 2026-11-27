@@ -464,7 +464,7 @@
     <label for="egg-code">Enter the code</label>
     <input id="egg-code" name="code" inputmode="numeric" maxlength="4" autocomplete="off" spellcheck="false">
     <p class="egg-msg" id="egg-msg" aria-live="polite"></p>
-    <div class="btns"><button class="btn" type="submit" value="cancel">Close</button><button class="btn solid" type="submit" value="go">Enter</button></div>
+    <div class="btns"><button class="btn" type="button" id="egg-close">Close</button><button class="btn solid" type="submit">Enter</button></div>
   </form>
 </dialog>
 
@@ -566,22 +566,41 @@
 
   // Easter egg: the footer's © opens a code box; 6767 makes the avatar do something silly.
   const egg = document.getElementById('egg'), eggForm = document.getElementById('egg-form'), eggCode = document.getElementById('egg-code'), eggMsg = document.getElementById('egg-msg');
+  document.getElementById('egg-close').addEventListener('click', () => egg.close());
+  // "six seven": two synth doots and the browser's own voice; made here, so no audio files to fetch
+  const unlockAudio = () => { try { const AC = window.AudioContext || window.webkitAudioContext; const ac = new AC(); ac.resume().catch(() => {}); return ac; } catch { return null; } };   // must run inside the keypress or click
+  const sixSeven = (ac) => {
+    try {
+      if (!ac) throw 0; const t0 = ac.currentTime + 0.05;
+      [[0, 330], [0.42, 392], [0.84, 330], [1.26, 392]].forEach(([at, f]) => {
+        const o = ac.createOscillator(), g = ac.createGain(), lp = ac.createBiquadFilter();
+        o.type = 'square'; o.frequency.value = f; lp.type = 'lowpass'; lp.frequency.value = 1400;
+        g.gain.setValueAtTime(0.0001, t0 + at); g.gain.exponentialRampToValueAtTime(0.12, t0 + at + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + at + 0.3);
+        o.connect(lp).connect(g).connect(ac.destination); o.start(t0 + at); o.stop(t0 + at + 0.32);
+      });
+      setTimeout(() => ac.close().catch(() => {}), 2500);
+    } catch {}
+    if ('speechSynthesis' in window) {
+      const u = new SpeechSynthesisUtterance('six, seven!'); u.lang = 'en-US'; u.rate = 1.05; u.pitch = 0.8;
+      speechSynthesis.cancel(); setTimeout(() => speechSynthesis.speak(u), 1700);
+    }
+  };
   document.getElementById('egg-open').addEventListener('click', () => { eggCode.value = ''; eggMsg.textContent = ''; egg.showModal(); });
   eggForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    if (e.submitter && e.submitter.value === 'cancel') { egg.close(); return; }
     if (eggCode.value.trim() !== '6767') {
       eggMsg.textContent = 'Nope. Try again.';
       egg.classList.remove('shake'); void egg.offsetWidth; egg.classList.add('shake');
       eggCode.select(); return;
     }
     egg.close();
-    if (document.documentElement.classList.contains('no-3d')) return;
+    const ac = unlockAudio();
+    if (document.documentElement.classList.contains('no-3d')) { sixSeven(ac); return; }
     const top = () => window.__zolLenis ? window.__zolLenis.scrollTo(0, { duration: 1.4 }) : scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     top();
     setTimeout(() => {
       const hero = document.querySelector('.hero'); hero.classList.add('egg-on');
-      dispatchEvent(new Event('zol:egg'));
+      dispatchEvent(new Event('zol:egg')); sixSeven(ac);
       setTimeout(() => hero.classList.remove('egg-on'), 7400);
     }, scrollY > 50 ? 1500 : 200);
   });

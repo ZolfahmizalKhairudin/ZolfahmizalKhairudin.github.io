@@ -119,6 +119,21 @@ function start() {
   add(egg, new THREE.TubeGeometry(zig, 48, 0.013, 6), toon(0xf2c230));
   const eggS = { on: false, t: 0, s: 0, v: 0 };
 
+  // easter egg: arms that pop up and do the "six seven" hands (palms up, bobbing in turn)
+  const arms = [];
+  for (const sx of [-1, 1]) {
+    const arm = new THREE.Group(); arm.position.set(sx * 0.82, -1.42, 0.66); arm.visible = false; body.add(arm);
+    const slGeo = new THREE.CylinderGeometry(0.12, 0.14, 0.8, 16); slGeo.translate(0, 0.4, 0);
+    add(arm, slGeo, toon(C.blazer), { line: 0.05 });
+    add(arm, new THREE.CylinderGeometry(0.095, 0.095, 0.07, 16), toon(C.shirt), { p: [0, 0.83, 0] });            // shirt cuff
+    const hand = new THREE.Group(); hand.position.set(0, 0.93, 0); arm.add(hand);
+    add(hand, new THREE.SphereGeometry(0.18, 18, 12), toon(C.skin), { s: [1.15, 0.42, 1.05], line: 0.08 });      // palm, facing up
+    add(hand, new THREE.SphereGeometry(0.05, 12, 8), toon(C.skin), { p: [sx * -0.19, 0.03, 0.03], s: [1.2, 0.8, 0.8], line: 0.12 });   // thumb
+    arms.push({ arm, hand, sx });
+  }
+  const armS = { s: 0, v: 0 };
+
+
   root.position.y = -0.95;
   const baseY = root.position.y;
 
@@ -135,8 +150,10 @@ function start() {
   if (still) {
     pivot.rotation.set(0.04, -0.25, 0); body.rotation.y = -0.08; renderer.render(scene, camera);
     addEventListener('zol:egg', () => {
-      egg.visible = true; egg.scale.z = 1; renderer.render(scene, camera);
-      setTimeout(() => { egg.visible = false; renderer.render(scene, camera); }, 7000);
+      egg.visible = true; egg.scale.z = 1;
+      arms.forEach(({ arm, hand, sx }) => { arm.visible = true; arm.rotation.set(0.95, 0, sx * -0.25); hand.rotation.x = -0.95; });
+      renderer.render(scene, camera);
+      setTimeout(() => { egg.visible = false; arms.forEach(({ arm }) => { arm.visible = false; }); renderer.render(scene, camera); }, 7000);
     });
     return;
   }
@@ -194,6 +211,19 @@ function start() {
       egg.scale.z = Math.max(0.001, eggS.s);
       egg.rotation.x = 0.75 + Math.sin(t * 9) * 0.09 * eggS.s;
       if (!eggS.on && eggS.s < 0.01) egg.visible = false;
+    }
+    const gesture = eggS.on && eggS.t < 5;
+    if (gesture || armS.s > 0.01) {
+      armS.v = armS.v * 0.78 + ((gesture ? 1 : 0) - armS.s) * 0.2; armS.s += armS.v;
+      const ph = t * 15;                                          // about 2.4 bobs a second
+      arms.forEach(({ arm, hand, sx }, i) => {
+        arm.visible = armS.s > 0.01;
+        arm.scale.setScalar(Math.max(0.001, armS.s));
+        const bob = Math.sin(ph + i * Math.PI) * 0.28;               // left and right in opposite phase
+        arm.rotation.set(0.95 + bob, 0, sx * -0.25);
+        hand.rotation.set(-0.95 - bob, 0, sx * 0.15);                // keep the palm facing up
+      });
+      pivot.rotation.z += Math.sin(ph) * 0.1 * armS.s;              // head bobs along
     }
 
     renderer.render(scene, camera);

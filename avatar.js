@@ -112,7 +112,7 @@ function start() {
   const rimB = new THREE.DirectionalLight(0x4fb3ff, 2); rimB.position.set(4, 1, -3); scene.add(rimB);
 
   // easter egg: a cartoon sausage tucked inside the bust until the secret code is entered
-  const egg = new THREE.Group(); egg.position.set(0, -1.25, 0.6); egg.rotation.x = 0.75; egg.scale.set(1, 1, 0.001); egg.visible = false; body.add(egg);
+  const egg = new THREE.Group(); egg.position.set(0, -1.4, 0.36); egg.rotation.x = Math.PI / 2; egg.scale.set(1, 1, 0.001); egg.visible = false; body.add(egg);
   const sGeo = new THREE.CapsuleGeometry(0.085, 0.34, 8, 16); sGeo.translate(0, 0.255, 0); sGeo.rotateX(Math.PI / 2);
   add(egg, sGeo, toon(0xc0603a), { line: 0.06 });
   const zig = new THREE.CatmullRomCurve3([...Array(8)].map((_, i) => new THREE.Vector3(Math.sin(i * 1.7) * 0.045, 0.085, 0.07 + i * 0.045)));
@@ -150,10 +150,10 @@ function start() {
   if (still) {
     pivot.rotation.set(0.04, -0.25, 0); body.rotation.y = -0.08; renderer.render(scene, camera);
     addEventListener('zol:egg', () => {
-      egg.visible = true; egg.scale.z = 1;
+      egg.visible = true; egg.scale.z = 1; camera.position.y = -1.1; camera.lookAt(0, -1.22, 0);
       arms.forEach(({ arm, hand, sx }) => { arm.visible = true; arm.rotation.set(0.95, 0, sx * -0.25); hand.rotation.x = -0.95; });
       renderer.render(scene, camera);
-      setTimeout(() => { egg.visible = false; arms.forEach(({ arm }) => { arm.visible = false; }); renderer.render(scene, camera); }, 7000);
+      setTimeout(() => { egg.visible = false; arms.forEach(({ arm }) => { arm.visible = false; }); camera.position.y = -0.6; camera.lookAt(0, -0.72, 0); renderer.render(scene, camera); }, 7000);
     });
     return;
   }
@@ -209,8 +209,9 @@ function start() {
       if (eggS.on && (eggS.t += dt) > 7) eggS.on = false;
       eggS.v = eggS.v * 0.8 + ((eggS.on ? 1 : 0) - eggS.s) * 0.16; eggS.s += eggS.v;
       egg.scale.z = Math.max(0.001, eggS.s);
-      egg.rotation.x = 0.75 + Math.sin(t * 9) * 0.09 * eggS.s;
-      if (!eggS.on && eggS.s < 0.01) egg.visible = false;
+      egg.rotation.x = Math.PI / 2; egg.rotation.z = Math.sin(t * 9) * 0.12 * eggS.s;   // hangs straight down and swings a little
+      camera.position.y = -0.6 - 0.5 * eggS.s; camera.lookAt(0, -0.72 - 0.5 * eggS.s, 0);   // pan down so it stays in frame
+      if (!eggS.on && eggS.s < 0.01) { egg.visible = false; camera.position.y = -0.6; camera.lookAt(0, -0.72, 0); }
     }
     const gesture = eggS.on && eggS.t < 5;
     if (gesture || armS.s > 0.01) {

@@ -17,8 +17,8 @@ function start() {
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(26, 1, 0.1, 50);
-  camera.position.set(0, 0.1, 8);
-  camera.lookAt(0, -0.35, 0);
+  camera.position.set(0, -0.6, 8.6);
+  camera.lookAt(0, -0.72, 0);
 
   // three-step toon shading and a dark ink outline (inverted hull)
   const grad = new THREE.DataTexture(new Uint8Array([70, 150, 255]), 3, 1, THREE.RedFormat);
@@ -118,7 +118,7 @@ function start() {
   const size = () => {
     const w = box.clientWidth, h = box.clientHeight; if (!w || !h) return;
     renderer.setSize(w, h, false); camera.aspect = w / h;
-    camera.position.z = w / h < 0.85 ? 9.2 : 8;   // pull back on tall, narrow boxes so the shoulders fit
+    camera.position.z = w / h < 0.85 ? 10.4 : 8.6;   // whole bust in view; pull back on tall, narrow boxes so the shoulders fit
     camera.updateProjectionMatrix();
   };
   new ResizeObserver(() => { size(); if (still) renderer.render(scene, camera); }).observe(box);

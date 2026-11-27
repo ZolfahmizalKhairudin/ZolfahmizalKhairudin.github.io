@@ -126,7 +126,7 @@
   @media (max-width: 640px) { .stats { grid-template-columns: 1fr; } }
 
   /* projects */
-  .work-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 48px; }
+  .work-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 20px 48px; margin-bottom: 48px; }
   .work-head p { max-width: 380px; margin: 0; color: var(--mute); }
   .track { display: grid; gap: 20px; }
   .panel { position: relative; display: grid; grid-template-columns: 1fr; gap: 28px; padding: clamp(24px, 4vw, 48px); border: 1px solid var(--line); border-radius: 28px; background: rgba(16,18,23,.82); backdrop-filter: blur(6px); overflow: hidden; }
@@ -249,7 +249,7 @@
       <p class="about-text">I'm a Computer Science student at UiTM, moving from a Diploma into <em>Netcentric Computing</em>. I build fullstack web apps with Laravel and PHP, Android apps in Java, and features that use <em>Gemini</em> to make hard things simple. Before all that, I spent six months keeping an office's laptops, printers and networks running.</p>
     </div>
     <div class="stats">
-      <div class="stat"><b data-count="5">5</b><span>projects built across web, mobile, AI and IoT</span></div>
+      <div class="stat"><b data-count="5" data-suffix="+">5+</b><span>projects built across web, mobile, AI and IoT</span></div>
       <div class="stat"><b data-count="2">2</b><span>UiTM programmes: Diploma, then B.Sc. Netcentric</span></div>
       <div class="stat"><b data-count="6">6</b><span>months as an IT Specialist intern</span></div>
     </div>
@@ -260,8 +260,8 @@
       <div class="wrap">
         <p class="sec-label mono">02 · Selected work</p>
         <div class="work-head">
-          <h2 id="work-h">Projects</h2>
-          <p>Five builds, from an AI contract reader to a flood sensor. Keep scrolling.</p>
+          <h2 id="work-h">Project highlights</h2>
+          <p>A few favourites from many builds, from an AI contract reader to a flood sensor. Keep scrolling.</p>
         </div>
       </div>
       <div class="track-wrap wrap">
@@ -607,7 +607,7 @@
   gsap.utils.toArray('.stat b').forEach((b) => {
     const n = { v: 0 }, end = +b.dataset.count;
     gsap.to(n, { v: end, duration: 1.2, ease: 'power2.out', scrollTrigger: { trigger: b, start: 'top 85%' },
-      onUpdate: () => { b.textContent = Math.round(n.v); } });
+      onUpdate: () => { b.textContent = Math.round(n.v) + (b.dataset.suffix || ''); } });
   });
 
   // Section titles slide up.

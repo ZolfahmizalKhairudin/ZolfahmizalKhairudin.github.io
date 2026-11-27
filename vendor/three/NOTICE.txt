@@ -1,0 +1,1 @@
+three.js r170 (0.170.0): MIT, see LICENSE. Used by avatar.js for the hero 3D avatar.

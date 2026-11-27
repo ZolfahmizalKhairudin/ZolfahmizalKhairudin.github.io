@@ -74,10 +74,20 @@
   main, footer { position: relative; z-index: 1; }
 
   /* hero */
-  .hero { display: grid; align-content: end; min-height: 100svh; padding: 120px 0 72px; }
-  .hero .mono { margin: 0 0 28px; }
+  .hero { display: grid; align-content: end; min-height: 100svh; padding: 96px 0 64px; }
+  .hero .mono { margin: 0 0 8px; text-align: center; }
+  .stage { position: relative; display: grid; justify-items: center; }
+  .avatar { position: relative; z-index: 1; width: min(620px, 100%); height: clamp(300px, 50vh, 520px); cursor: grab; touch-action: pan-y; }
+  .avatar canvas { display: block; width: 100%; height: 100%; -webkit-mask: linear-gradient(#000 72%, transparent 96%); mask: linear-gradient(#000 72%, transparent 96%); }
+  .avatar::after { content: ""; position: absolute; left: 50%; bottom: 6%; width: 46%; height: 30px; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(rgba(124,232,216,.25), transparent 70%); z-index: -1; }
+  .avatar-hint { position: absolute; right: 4%; top: 22%; margin: 0; padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: rgba(10,11,14,.7); transition: opacity .6s; pointer-events: none; }
+  .avatar-hint.gone { opacity: 0; }
+  .stage h1 { position: relative; z-index: 2; margin-top: -0.55em; text-align: center; }
+  .no-3d .avatar { display: none; }
+  .no-3d .stage h1 { margin-top: 24px; }
+  @media (hover: none), (prefers-reduced-motion: reduce) { .avatar-hint { display: none; } }
   .hero .mono i { display: inline-block; width: 8px; height: 8px; margin-right: 10px; border-radius: 50%; background: var(--aqua); box-shadow: 0 0 0 4px rgba(124,232,216,.18); vertical-align: 1px; }
-  h1 { margin: 0; font: 700 clamp(56px, 12.5vw, 196px)/.86 var(--display); letter-spacing: -.045em; }
+  h1 { margin: 0; font: 700 clamp(48px, 9.5vw, 150px)/.88 var(--display); letter-spacing: -.045em; }
   h1 .soft { color: transparent; -webkit-text-stroke: 1.5px var(--text); }
   .line { display: block; overflow: hidden; padding-bottom: .04em; }
   .line > span { display: inline-block; }
@@ -220,10 +230,16 @@
 <main id="top">
   <header class="hero wrap">
     <p class="mono"><i aria-hidden="true"></i>Open to internships &amp; junior roles · Perak, MY</p>
-    <h1>
-      <span class="line"><span>Hi, I'm Zol.</span></span>
-      <span class="line soft"><span>I build things.</span></span>
-    </h1>
+    <div class="stage">
+      <div class="avatar" role="img" aria-label="A 3D cartoon of Zol in a green blazer and glasses that turns to look at your cursor">
+        <canvas></canvas>
+        <p class="avatar-hint mono" aria-hidden="true">Move your cursor ↖</p>
+      </div>
+      <h1>
+        <span class="line"><span>Hi, I'm Zol.</span></span>
+        <span class="line soft"><span>I build things.</span></span>
+      </h1>
+    </div>
     <div class="hero-foot">
       <p class="lede">Fullstack and mobile developer studying <b>Computer Science (Netcentric Computing)</b> at UiTM. Laravel, PHP, MySQL, Java, and <b>AI features with the Gemini API</b>.</p>
       <div class="btns">
@@ -503,6 +519,7 @@
   requestAnimationFrame(loop);
 })();
 </script>
+<script type="module" src="avatar.js"></script>
 <script src="vendor/scroll/gsap.min.js"></script>
 <script src="vendor/scroll/ScrollTrigger.min.js"></script>
 <script src="vendor/scroll/lenis.min.js"></script>
@@ -582,7 +599,7 @@
 
   // Hero lines rise out of their masks.
   gsap.from('.hero .line > span', { yPercent: 110, duration: 1.1, ease: 'expo.out', stagger: 0.12, delay: 0.1 });
-  gsap.from(['.hero .mono', '.hero-foot'], { y: 24, opacity: 0, duration: 0.9, ease: 'power3.out', stagger: 0.1, delay: 0.5 });
+  gsap.from(['.hero > .mono', '.hero-foot'], { y: 24, opacity: 0, duration: 0.9, ease: 'power3.out', stagger: 0.1, delay: 0.5 });
 
   // About: words light up as you read down.
   const about = document.querySelector('.about-text');
